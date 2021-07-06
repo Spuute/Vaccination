@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  ms-sql-server:
+    image: mcr.microsoft.com/mssql/server:2019-CU10-ubuntu-20.04
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "verystrong!pass321"
+      MSSQL_PID: Express
+    volumes:
+      - Vaccination:/var/opt/mssql
+volumes:
+  Vaccination:
+    driver: local

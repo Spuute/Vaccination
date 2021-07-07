@@ -35,38 +35,67 @@ namespace backend.Controllers
             return Ok(people);
         }
 
+        [HttpGet("orderby")]
+        public IActionResult OrderBy()
+        {
+            var nonVaccinatedHealthCareEmployees = _context.Persons
+            .Where(c => c.Vaccination.FirstDose == false && c.Vaccination.SecondDose == false && c.HealthCareEmployee == true)
+            .ToList();
+            var oldestFirst = nonVaccinatedHealthCareEmployees.OrderBy(x => x.SocialSecurityNumber.Substring(0, 8)).ToList();
+            return Ok(oldestFirst);
+
+        }
+
         [HttpGet("test")]
         public IActionResult Test()
         {
-            var avaliableDoses = _context.AvailableDoses.ToList();
+            int avaliableDoses = _context.AvailableDoses.Select(x => x.AvailableDoses).FirstOrDefault();
 
             var nonVaccinatedHealthCareEmployees = _context.Persons
             .Where(c => c.Vaccination.FirstDose == false && c.Vaccination.SecondDose == false && c.HealthCareEmployee == true)
             .Where(x => x.HealthCareEmployee == true).ToList();
 
-            // if (avaliableDoses.Count > nonVaccinatedHealthCareEmployees.Count)
+            
+            //TODO: Kolla först om alla inom vård och omsorg har fått en första dos, annars fortsätt på dom som ej har fått sin första, därefter en andra dos. 
+            if (avaliableDoses > _context.Persons.Include(x => x.Vaccination.FirstDose).Count())
             // {
-            //     var oldestFirst = nonVaccinatedHealthCareEmployees.OrderBy(x => x.SocialSecurityNumber.Substring(0, 8)).ToList();
-            //     return Ok(oldestFirst);
+            //     var vaccinate = _context.Persons.Include(x => x.Vaccination).Where(x => x.Vaccination.FirstDose == false).OrderBy(x => x.SocialSecurityNumber.Substring(0, 8)).ToList();
+            //     // vaccinate.
             // }
 
-            // if (avaliableDoses.Count < nonVaccinatedHealthCareEmployees.Count)
-            // {
-            //     for (int i = avaliableDoses.Count; i < nonVaccinatedHealthCareEmployees.Count; i++)
-            //     {
-            //     var oldestFirst = nonVaccinatedHealthCareEmployees.OrderBy(x => x.SocialSecurityNumber.Substring(0, 8)).ToList();
-            //     oldestFirst.Remove()
-            //     };
-            //     return Ok(oldestFirst);
-            // }
+            if (avaliableDoses > nonVaccinatedHealthCareEmployees.Count)
+            {
+                var oldestFirst = nonVaccinatedHealthCareEmployees.OrderBy(x => x.SocialSecurityNumber.Substring(0, 8)).ToList();
+                return Ok(oldestFirst);
+            }
 
-            return Ok(oldestFirst);
+            if (avaliableDoses < nonVaccinatedHealthCareEmployees.Count)
+            {
+                for (int i = avaliableDoses; i < nonVaccinatedHealthCareEmployees.Count; i++)
+                {
+                    var oldestFirst = nonVaccinatedHealthCareEmployees.OrderBy(x => x.SocialSecurityNumber.Substring(0, 8)).Take(avaliableDoses).ToList();
+                    foreach (var person in oldestFirst)
+                    {
+                        var personToVaccinate = _context.Persons.Include(x => x.Vaccination).Where(x => x.Id == person.Id).FirstOrDefault();
+                        personToVaccinate.Vaccination.FirstDose = true;
+                        _context.SaveChanges();
+                    }
+                    return Ok(oldestFirst);
+                };
+            }
+
+            return Ok();
+        }
+
+        [HttpGet("vaccinated/phase-one")]
+        public IActionResult PhaseOneVaccination()
+        {
+            throw new NotImplementedException();
         }
 
         [HttpPost("people/add")]
         public IActionResult AddPerson([FromBody] AddPersonDTO person)
         {
-
             var thisPerson = new Person
             {
                 FirstName = person.FirstName,

@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using api.Data;
 
 namespace backend.Migrations
 {
     [DbContext(typeof(VaccinationContext))]
-    partial class VaccinationContextModelSnapshot : ModelSnapshot
+    [Migration("20210707210522_Updated_Name_For_Property_In_Vaccine_Table")]
+    partial class Updated_Name_For_Property_In_Vaccine_Table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

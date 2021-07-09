@@ -49,8 +49,8 @@ namespace backend.Controllers
 
         [HttpGet("test1")]
         public IActionResult Test1() {
-            var apa= (int)_context.AvailableDoses.Where(x => x.Id == 1);
-            apa.Select(x => x.Doses).FirstOrDefault();
+            var apa = _context.AvailableDoses.Where(x => x.Id == 1);
+            apa.
             return Ok(apa);
         }
 
